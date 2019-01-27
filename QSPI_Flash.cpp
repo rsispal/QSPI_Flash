@@ -1,4 +1,4 @@
-#include "qspi-flash.h"
+#include <QSPI_Flash.h>
 
 #define FLASH_TYPE    SPIFLASHTYPE_W25Q16BV  // Flash chip type.
 
@@ -8,7 +8,6 @@ Adafruit_W25Q16BV_FatFs fs(flash);
 /*
 Method: getFlashPages()
 Description: Get the hardware manufacturer ID
-
 Input: None
 Output: uint8_t of manufacturer ID
 */
@@ -18,11 +17,9 @@ uint8_t FlashMemory::getManufacturerID() {
 }
 
 
-
 /*
 Method: getDeviceID()
 Description: Get the hardware device ID
-
 Input: None
 Output: uint8_t of device ID
 */
@@ -36,7 +33,6 @@ uint8_t FlashMemory::getDeviceID() {
 /*
 Method: getFlashPages()
 Description: Get the page count from the hardware
-
 Input: None
 Output: uint16_t of page count
 */
@@ -47,7 +43,6 @@ uint16_t FlashMemory::getFlashPages() {
 /*
 Method: getFlashPageSize()
 Description: Get the size of the flash pages from the hardware
-
 Input: None
 Output: uint16_t of page size
 */
@@ -58,7 +53,6 @@ uint16_t FlashMemory::getFlashPageSize() {
 /*
 Method: getFlashChipID()
 Description: Get the chip JEDECID ID from the hardware
-
 Input: None
 Output: uint32_t of JEDECID
 */
@@ -70,7 +64,6 @@ uint32_t FlashMemory::getFlashChipID() {
 /*
 Method: getFlashChipAddress()
 Description: Get the bus address of the hardware
-
 Input: None
 Output: uint32_t of device bus address
 */
@@ -81,7 +74,6 @@ uint32_t FlashMemory::getFlashChipAddress() {
 /*
 Method: initialise()
 Description: Initialise with no debug enabled (default)
-
 Input: None
 Output: 0 = success
 */
@@ -104,7 +96,6 @@ int FlashMemory::initialise() {
 /*
 Method: initialise()
 Description: Initialise with a specific debug level
-
 Input: debugLevel integer (0 - 254)
 Output: 0 = success, -1 = chip not ready
 */
@@ -126,7 +117,6 @@ int FlashMemory::initialise(int debugLevel) {
 /*
 Method: checkIfFlashMemoryIsReady()
 Description:
-
 Input: None
 Output: true = chip ready, false = chip not ready
 */
@@ -142,7 +132,6 @@ bool FlashMemory::checkIfFlashMemoryIsReady() {
 /*
 Method: setDebugLevel()
 Description: Override existing debug level
-
 Input: debugLevel integer (0 - 254)
 Output: 0 = success, -1 = error
 */
@@ -157,7 +146,6 @@ int FlashMemory::setDebugLevel(int debugLevel) {
 /*
 Method: getDebugLevel()
 Description: Get the current debug level value
-
 Input: None
 Output: debug level integer
 */
@@ -168,7 +156,6 @@ int FlashMemory::getDebugLevel(int debugLevel) {
 /*
 Method: format()
 Description: Format the flash memory into a single partition
-
 Input: None
 Output: 0 = success, -1/-2/-3 = error
 */
@@ -211,7 +198,6 @@ int FlashMemory::format() {
 /*
 Method: getFilesInDirectory()
 Description: Get the folder representation to access files
-
 Input: directory char array
 Output: File object for the directory, null = directory doesnt exist/error
 */
@@ -226,7 +212,6 @@ File FlashMemory::getFilesInDirectory(char directory[]) {
 /*
 Method: checkFileExists()
 Description: Check if a specific file exists in the queried directory
-
 Input: directory char array, filename char array (with extension)
 Output: true = exists, false = doesnt exist
 */
@@ -240,7 +225,6 @@ bool FlashMemory::checkFileExists(char directory[], char filename[]) {
 /*
 Method: checkDirectoryExists()
 Description: Check if a specific directory exists in the queried directory path
-
 Input: directory char array
 Output: true = exists, false = doesnt exist
 */
@@ -252,7 +236,6 @@ bool FlashMemory::checkDirectoryExists(char directory[]) {
 /*
 Method: getFile()
 Description: Get specific file by directory and filename
-
 Input: directory char array, filename char array (with extension)
 Output: File object
 */
@@ -267,7 +250,6 @@ File FlashMemory::getFile(char directory[], char filename[]) {
 /*
 Method: createDirectory()
 Description: Create an empty file in the specified directory with the specified name
-
 Input: directory char array, filename char array (with extension)
 Output: 0 = success, -1 = already exists, -2 = error creating
 */
@@ -284,7 +266,6 @@ int FlashMemory::createDirectory(char directory[]) {
 /*
 Method: createFile()
 Description: Create an empty file in the specified directory with the specified name
-
 Input: directory char array, filename char array (with extension)
 Output: 0 = success, -1 = already exists, -2 = error creating
 */
@@ -307,7 +288,6 @@ int FlashMemory::createFile(char directory[], char filename[]) {
 /*
 Method: saveFile()
 Description: Save content to file
-
 Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
 Output:  0 = success, -1 = file didnt exist and failed to create it,, -2 file already has content and user requested not to over write
 */
@@ -345,7 +325,6 @@ bool FlashMemory::saveFile(char directory[], char filename[], char content[], bo
 /*
 Method: getFilesize()
 Description: Get filesize of the file path provided
-
 Input: directory char array, filename char array (with extension)
 Output: 0 = success, -1 = Doesnt exist, -2 = error reading
 */
@@ -367,7 +346,6 @@ int FlashMemory::getFilesize(char directory[], char filename[]) {
 /*
 Method: readFileContents()
 Description: Read file content to provided fileContent array
-
 Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
 Output: true = content read and stored in fileContent[] array, false = content not written
 */
@@ -396,7 +374,6 @@ int FlashMemory::readFileContents(char directory[], char filename[], char fileCo
 /*
 Method: deleteFile()
 Description: Delete a file by its filename in the specified directory
-
 Input: directory char array, filename char array (with extension)
 Output: 0 = success, -1 = could not delete
 */
@@ -419,7 +396,6 @@ int FlashMemory::deleteFile(char directory[], char filename[]) {
 /*
 Method: deleteDirectory()
 Description: Delete directory and all sub-content
-
 Input: directory char array
 Output: 0 = success, -1 = could not delete, -2 = directory wasnt deleted
 */
@@ -445,7 +421,6 @@ int FlashMemory::deleteDirectory(char directory[]) {
 /*
 Method: getFlashQSPIInterface()
 Description: get the raw QSPI_GD25Q flash object
-
 Input:
 Output: Adafruit_QSPI_GD25Q object
 */
@@ -456,7 +431,6 @@ Adafruit_QSPI_GD25Q FlashMemory::getFlashQSPIInterface() {
 /*
 Method: getFlashFileSystemInterface()
 Description: get the raw FatFs object for low-level controls
-
 Input:
 Output: Adafruit_W25Q16BV_FatFs object
 */

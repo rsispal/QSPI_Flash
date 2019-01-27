@@ -13,7 +13,7 @@ This library has been tailored for the Adafruit ItsyBitsy M4 (only boards I have
 - Adafruit_W25Q16BV_FatFs
 
 Once I figure out a way to determine which flash chip the Adafruit libraries (which are a dependency) initialise, I can integrate those. For now, do it manually in the `qspi-flash.h` and `qspi-flash.cpp`.
-
+ 
 Board | Flash Chip | Status |
 ------------ | -------------
 Adafruit ItsyBitsy M4 | W25Q16BV | `Tested. Works`
