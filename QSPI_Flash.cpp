@@ -162,38 +162,38 @@ Input: None
 Output: 0 = success, -1/-2/-3 = error
 */
 int QSPIFlashMemory::format() {
-    if (_debugLevel > 0) { Serial.println("\n\n Formatting Flash Chip"); }
+    if (_debugLevel > 0) { Serial.print("\n\n Formatting Flash Chip"); }
 
     fs.activate();
 
     // Partition the flash with 1 partition that takes the entire space.
-    if (_debugLevel > 0) { Serial.println("\n -> Partitioning flash with 1 primary partition using 100% available space"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Partitioning flash with 1 primary partition using 100% available space"); }
     DWORD plist[] = { 100, 0, 0, 0 };  // 1 primary partition with 100% of space.
     uint8_t buf[512] = { 0 };          // Working buffer for f_fdisk function.
     FRESULT r = f_fdisk(0, plist, buf);
     if (r != FR_OK) {
-        if (_debugLevel > 0) { Serial.print("\n -> Error, f_fdisk failed with error code: "); Serial.println(r, DEC); }
+        if (_debugLevel > 0) { Serial.print("\n -> Error, f_fdisk failed with error code: "); Serial.print(r, DEC); }
         return -1;
     }
-    if (_debugLevel > 0) { Serial.println("\n -> Partitioned flash!"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Partitioned flash!"); }
 
     // Make filesystem.
-    if (_debugLevel > 0) { Serial.println("\n -> Making FAT file system (takes ~60s)"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Making FAT file system (takes ~60s)"); }
     r = f_mkfs("", FM_ANY, 0, buf, sizeof(buf));
     if (r != FR_OK) {
-        if (_debugLevel > 0) { Serial.print(" -> Error, f_mkfs failed with error code: "); Serial.println(r, DEC); }
+        if (_debugLevel > 0) { Serial.print(" -> Error, f_mkfs failed with error code: "); Serial.print(r, DEC); }
         return -2;
     }
-    if (_debugLevel > 0) { Serial.println("\n -> Format complete"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Format complete"); }
 
     // Finally test that the filesystem can be mounted.
-    if (_debugLevel > 0) { Serial.println("\n -> Testing filesystem is functional"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Testing filesystem is functional"); }
     if (!fs.begin()) {
-        if (_debugLevel > 0) { Serial.println("\n -> Error, failed to mount newly formatted filesystem!"); }
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount newly formatted filesystem!"); }
         return -3;
     }
-    if (_debugLevel > 0) { Serial.println("\n -> Filesystem available"); }
-    if (_debugLevel > 0) { Serial.println("\n -> Complete!\n"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Filesystem available"); }
+    if (_debugLevel > 0) { Serial.print("\n -> Complete!\n"); }
     return 0;
 }
 
@@ -204,7 +204,6 @@ Input: directory char array
 Output: File object for the directory, null = directory doesnt exist/error
 */
 File QSPIFlashMemory::getFilesInDirectory(char directory[]) {
-    // THIS IS GIVING AN ERROR!
     if (checkDirectoryExists(directory) == false) {
         return NULL;
     }
@@ -223,10 +222,10 @@ bool QSPIFlashMemory::checkFileExists(char directory[], char filename[]) {
 
     // return fs.exists(resolvedPath) == true ? true : false;
     if (fs.exists(resolvedPath)) {
-        Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Exists");
+        if (_debugLevel > 0) { Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Exists"); }
         return true;
     }
-    Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Doesnt Exist");
+    if (_debugLevel > 0) { Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Doesnt Exist"); }
     return false;
 }
 
@@ -239,10 +238,10 @@ Output: true = exists, false = doesnt exist
 bool QSPIFlashMemory::checkDirectoryExists(char directory[]) {
     path.resolve(resolvedPath, directory);
     if (fs.exists(resolvedPath)) {
-        Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Exists");
+        if (_debugLevel > 0) { Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Exists"); }
         return true;
     }
-    Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Doesnt Exist");
+    if (_debugLevel > 0) { Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Doesnt Exist"); }
     return false;
 }
 
@@ -327,14 +326,6 @@ int QSPIFlashMemory::createFile(char directory[], char filename[]) {
 
     cf.close();
     if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createFile() - File created"); }
-    // path.resolve(resolvedPath, directory, filename);
-    // File writeFile = fs.open(resolvedPath, FILE_WRITE);
-    // if (!writeFile) {
-    //     Serial.println("Error, failed to open test.txt for writing!");
-    //     return -1;
-    // }
-    //
-    // writeFile.close();
 
     return 0;
 }
@@ -345,11 +336,15 @@ Description: Save content to file
 Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
 Output:  0 = success, -1 = file didnt exist and failed to create it,, -2 file already has content and user requested not to over write
 */
-bool QSPIFlashMemory::saveFile(char directory[], char filename[], char content[], bool overwriteExistingContent) {
+int QSPIFlashMemory::saveFile(char directory[], char filename[], char content[], bool overwriteExistingContent) {
     if (checkFileExists(directory, filename) == false) {
-        if (createFile(directory, filename) == false) {
+        if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - File doesnt exist"); }
+
+        if (createFile(directory, filename) != 0) {
+            if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - File doesnt exist, error creating it "); }
            return -1;
         }
+        if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - File didnt exist, so created it"); }
     }
 
     if (getFilesize(directory, filename) > 0) {
@@ -357,20 +352,55 @@ bool QSPIFlashMemory::saveFile(char directory[], char filename[], char content[]
             return -2;
         }
     }
+
     path.resolve(resolvedPath, directory, filename);
     fs.activate();
     File wf = fs.open(resolvedPath, FILE_WRITE);
     if (!wf) {
-        Serial.println("\nError, failed to open test.txt for writing!");
+        if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - Error, failed to open file for writing!"); }
     }
+
     if (overwriteExistingContent == true) {
-        wf.seek(0);
-        wf.print(content);
+        // wf.seek(0);
+        // for (int i = 0; i < wf.size() ; i++) {
+        //     wf.print(NULL);
+        // }
+        // wf.seek(0);
+        // wf.print(content);
+        wf.write(content);
     } else {
         wf.print(content);
     }
 
     // Close the file when finished writing.
+    wf.close();
+    return 0;
+}
+
+/*
+Method: appendFile()
+Description: Save content to file
+Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
+Output:  0 = success, -1 = file didnt exist and failed to create it, -2 file couldnt be written to
+*/
+int QSPIFlashMemory::appendToFile(char directory[], char filename[], char content[]) {
+    if (checkFileExists(directory, filename) == false) {
+        if (createFile(directory, filename) == false) {
+           return -1;
+        }
+    }
+
+    path.resolve(resolvedPath, directory, filename);
+    fs.activate();
+    File wf = fs.open(resolvedPath, FILE_WRITE);
+    if (!wf) {
+        if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
+        return -2;
+    }
+
+    // Close the file when finished writing.
+    wf.seek(wf.available());
+    wf.print(content);
     wf.close();
     return 0;
 }
@@ -400,7 +430,7 @@ Description: Read file content to provided fileContent array
 Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
 Output: true = content read and stored in fileContent[] array, false = content not written
 */
-int QSPIFlashMemory::readFileContents(char directory[], char filename[], char fileContent[], int maxReadSize) {
+int QSPIFlashMemory::readFileContents(char directory[], char filename[], uint8_t fileContent[], int maxReadSize) {
     if (checkFileExists(directory, filename) == false) {
         return -1;
     }
@@ -412,9 +442,7 @@ int QSPIFlashMemory::readFileContents(char directory[], char filename[], char fi
     }
     int i = 0;
     while (cf.available() && i < maxReadSize) {
-        char c = cf.read();
-        Serial.print(c);
-        fileContent[i] = c;
+        fileContent[i] = cf.read();
         i++;
     }
     return 0;
@@ -434,10 +462,10 @@ int QSPIFlashMemory::deleteFile(char directory[], char filename[]) {
     File cf = fs.open(resolvedPath, FILE_WRITE);
     cf.close();
     if (!fs.remove(resolvedPath)) {
-      Serial.println("\nError, couldn't delete test.txt file!");
+      if (_debugLevel > 0) { Serial.println("\nError, couldn't delete test.txt file!"); }
       return -1;
     }
-    Serial.println("\nDeleted file!");
+    if (_debugLevel > 0) { Serial.println("\nDeleted file!"); }
     return 0;
 }
 
@@ -454,15 +482,15 @@ int QSPIFlashMemory::deleteDirectory(char directory[]) {
     // unix filesystems!
 
     if (!fs.rmdir(directory)) {
-      Serial.println("\nError, couldn't delete directory!");
-      return -1;
+        if (_debugLevel > 0) { Serial.println("\nError, couldn't delete directory!"); }
+        return -1;
     }
     // Check that test is really deleted.
     if (fs.exists(directory)) {
-      Serial.println("\nError, directory was not deleted!");
-      return -2;
+        if (_debugLevel > 0) { Serial.println("\nError, directory was not deleted!"); }
+        return -2;
     }
-    Serial.println("\nDirectory was deleted!");
+    if (_debugLevel > 0) { Serial.println("\nDirectory was deleted!"); }
     return 0;
 }
 
