@@ -10,8 +10,8 @@
 
 
 
-#ifndef   _FLASHMEMORY_H
-#define   _FLASHMEMORY_H
+#ifndef   _QSPIFLASHMEMORY_H
+#define   _QSPIFLASHMEMORY_H
 
 /*
 Debug Levels (CREATE ENUMS)
@@ -24,7 +24,7 @@ Debug Levels (CREATE ENUMS)
 
 
 
-class FlashMemory {
+class QSPIFlashMemory {
 
     public:
         uint8_t manufacturerID;
@@ -63,7 +63,7 @@ class FlashMemory {
     private:
 
         int _debugLevel = 0;
-        char path[512] = { 0 };
+        char resolvedPath[512] = { 0 };
 };
 
-#endif // _FLASHMEMORY_H
+#endif // _QSPIFLASHMEMORY_H

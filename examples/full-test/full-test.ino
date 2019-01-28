@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <QSPI_Flash.h>
 
-FlashMemory flashMemory;
+QSPIFlashMemory flashMemory;
 
 
 void setup() {
