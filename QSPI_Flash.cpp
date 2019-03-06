@@ -1,88 +1,21 @@
 #include <QSPI_Flash.h>
-#include "Path.h"
 #define FLASH_TYPE    SPIFLASHTYPE_W25Q16BV  // Flash chip type.
 
 Adafruit_QSPI_GD25Q flash;
 Adafruit_W25Q16BV_FatFs fs(flash);
 
-Path path;
-
-/*
-Method: getFlashPages()
-Description: Get the hardware manufacturer ID
-Input: None
-Output: uint8_t of manufacturer ID
-*/
-uint8_t QSPIFlashMemory::getManufacturerID() {
-     flash.GetManufacturerInfo(&manufacturerID, &deviceID);
-     return manufacturerID;
-}
-
-
-/*
-Method: getDeviceID()
-Description: Get the hardware device ID
-Input: None
-Output: uint8_t of device ID
-*/
-uint8_t QSPIFlashMemory::getDeviceID() {
-    flash.GetManufacturerInfo(&manufacturerID, &deviceID);
-    return deviceID;
-}
-
-
-
-/*
-Method: getFlashPages()
-Description: Get the page count from the hardware
-Input: None
-Output: uint16_t of page count
-*/
-uint16_t QSPIFlashMemory::getFlashPages() {
-    return pageCount = flash.numPages();
-}
-
-/*
-Method: getFlashPageSize()
-Description: Get the size of the flash pages from the hardware
-Input: None
-Output: uint16_t of page size
-*/
-uint16_t QSPIFlashMemory::getFlashPageSize() {
-    return pageSize = flash.pageSize();
-}
-
-/*
-Method: getFlashChipID()
-Description: Get the chip JEDECID ID from the hardware
-Input: None
-Output: uint32_t of JEDECID
-*/
-uint32_t QSPIFlashMemory::getFlashChipID() {
-    return chipModelID = flash.GetJEDECID();
-}
-
-
-/*
-Method: getFlashChipAddress()
-Description: Get the bus address of the hardware
-Input: None
-Output: uint32_t of device bus address
-*/
-uint32_t QSPIFlashMemory::getFlashChipAddress() {
-    return chipAddress = flash.getAddr();
-}
 
 /*
 Method: initialise()
 Description: Initialise with no debug enabled (default)
 Input: None
-Output: 0 = success
+Output:
+    0: success
 */
 int QSPIFlashMemory::initialise() {
     flash.setFlashType(FLASH_TYPE);
     _debugLevel = 0;
-
+    path.initialise(_debugLevel);
     if (checkIfFlashMemoryIsReady() == false) {
         return -1;
     }
@@ -99,12 +32,15 @@ int QSPIFlashMemory::initialise() {
 Method: initialise()
 Description: Initialise with a specific debug level
 Input: debugLevel integer (0 - 254)
-Output: 0 = success, -1 = chip not ready
+Output:
+     0: success
+    -1: chip not ready
 */
 int QSPIFlashMemory::initialise(int debugLevel) {
     flash.setFlashType(FLASH_TYPE);
     if (debugLevel >= 0 && debugLevel < 255) {
         _debugLevel = debugLevel;
+        path.initialise(debugLevel);
     }
     if (checkIfFlashMemoryIsReady() == false) {
         return -1;
@@ -117,29 +53,18 @@ int QSPIFlashMemory::initialise(int debugLevel) {
 }
 
 /*
-Method: checkIfFlashMemoryIsReady()
-Description:
-Input: None
-Output: true = chip ready, false = chip not ready
-*/
-bool QSPIFlashMemory::checkIfFlashMemoryIsReady() {
-    // TODO: Add logic to check 5 times then return false if still unavailable
-    if (!flash.begin()) {
-        if (_debugLevel >= 0 && _debugLevel < 255) { Serial.println("\nCould not find flash on QSPI bus!"); }
-        return false;
-    }
-    return true;
-}
-
-/*
 Method: setDebugLevel()
 Description: Override existing debug level
-Input: debugLevel integer (0 - 254)
-Output: 0 = success, -1 = error
+Input:
+    int debugLevel: Desired debug level integer (0 - 254) - See QSPI_Flash.h for details
+Output:
+     0: Value changed successfully
+    -1: Illegal value
 */
 int QSPIFlashMemory::setDebugLevel(int debugLevel) {
     if (debugLevel >= 0 && debugLevel < 255) {
         _debugLevel = debugLevel;
+        path.initialise(_debugLevel);
         return 0;
     }
     return -1;
@@ -149,17 +74,107 @@ int QSPIFlashMemory::setDebugLevel(int debugLevel) {
 Method: getDebugLevel()
 Description: Get the current debug level value
 Input: None
-Output: debug level integer
+Output:
+    int (0 - 254): Current debug level integer (0 - 254) - See QSPI_Flash.h for details
 */
 int QSPIFlashMemory::getDebugLevel(int debugLevel) {
     return _debugLevel;
 }
 
 /*
+Method: checkIfFlashMemoryIsReady()
+Description:
+Input: None
+Output:
+    true: chip ready
+    false: chip not ready
+*/
+bool QSPIFlashMemory::checkIfFlashMemoryIsReady() {
+    // TODO: Add logic to check 5 times then return false if still unavailable
+    if (!flash.begin()) {
+        if (_debugLevel > 0 && _debugLevel < 255) { Serial.println("\nCould not find flash on QSPI bus!"); }
+        return false;
+    }
+    return true;
+}
+
+/*
+Method: getFlashPages()
+Description: Get the hardware manufacturer ID
+Input: None
+Output:
+    uint8_t of manufacturer ID
+*/
+uint8_t QSPIFlashMemory::getManufacturerID() {
+     flash.GetManufacturerInfo(&manufacturerID, &deviceID);
+     return manufacturerID;
+}
+
+/*
+Method: getDeviceID()
+Description: Get the hardware device ID
+Input: None
+Output:
+    uint8_t of device ID
+*/
+uint8_t QSPIFlashMemory::getDeviceID() {
+    flash.GetManufacturerInfo(&manufacturerID, &deviceID);
+    return deviceID;
+}
+
+/*
+Method: getFlashPages()
+Description: Get the page count from the hardware
+Input: None
+Output:
+    uint16_t of page count
+*/
+uint16_t QSPIFlashMemory::getFlashPages() {
+    return pageCount = flash.numPages();
+}
+
+/*
+Method: getFlashPageSize()
+Description: Get the size of the flash pages from the hardware
+Input: None
+Output:
+    uint16_t of page size
+*/
+uint16_t QSPIFlashMemory::getFlashPageSize() {
+    return pageSize = flash.pageSize();
+}
+
+/*
+Method: getFlashChipID()
+Description: Get the chip JEDECID ID from the hardware
+Input: None
+Output:
+    uint32_t of JEDECID
+*/
+uint32_t QSPIFlashMemory::getFlashChipID() {
+    return chipModelID = flash.GetJEDECID();
+}
+
+
+/*
+Method: getFlashChipAddress()
+Description: Get the bus address of the hardware
+Input: None
+Output:
+    uint32_t of device bus address
+*/
+uint32_t QSPIFlashMemory::getFlashChipAddress() {
+    return chipAddress = flash.getAddr();
+}
+
+/*
 Method: format()
 Description: Format the flash memory into a single partition
 Input: None
-Output: 0 = success, -1/-2/-3 = error
+Output:
+    0: success
+    -1/-2/-3: error
+@TODO: Explain properly what the error codes are
 */
 int QSPIFlashMemory::format() {
     if (_debugLevel > 0) { Serial.print("\n\n Formatting Flash Chip"); }
@@ -200,8 +215,11 @@ int QSPIFlashMemory::format() {
 /*
 Method: getFilesInDirectory()
 Description: Get the folder representation to access files
-Input: directory char array
-Output: File object for the directory, null = directory doesnt exist/error
+Input:
+    char directory[]: user-specified directory (leading /)
+Output:
+    NULL: Directory does not exist or an error occurred
+    File: File object for the directory
 */
 File QSPIFlashMemory::getFilesInDirectory(char directory[]) {
     if (checkDirectoryExists(directory) == false) {
@@ -214,13 +232,15 @@ File QSPIFlashMemory::getFilesInDirectory(char directory[]) {
 /*
 Method: checkFileExists()
 Description: Check if a specific file exists in the queried directory
-Input: directory char array, filename char array (with extension)
-Output: true = exists, false = doesnt exist
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+Output:
+    true: File exists
+    false: File doesn't exist
 */
 bool QSPIFlashMemory::checkFileExists(char directory[], char filename[]) {
     path.resolve(resolvedPath, directory, filename);
-
-    // return fs.exists(resolvedPath) == true ? true : false;
     if (fs.exists(resolvedPath)) {
         if (_debugLevel > 0) { Serial.print("\nQSPIFlashMemory::checkDirectoryExists - Exists"); }
         return true;
@@ -232,8 +252,11 @@ bool QSPIFlashMemory::checkFileExists(char directory[], char filename[]) {
 /*
 Method: checkDirectoryExists()
 Description: Check if a specific directory exists in the queried directory path
-Input: directory char array
-Output: true = exists, false = doesnt exist
+Input:
+    char directory[]: user-specified directory (leading /)
+Output:
+    true: File exists
+    false: File doesn't exist
 */
 bool QSPIFlashMemory::checkDirectoryExists(char directory[]) {
     path.resolve(resolvedPath, directory);
@@ -248,22 +271,37 @@ bool QSPIFlashMemory::checkDirectoryExists(char directory[]) {
 /*
 Method: getFile()
 Description: Get specific file by directory and filename
-Input: directory char array, filename char array (with extension)
-Output: File object
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+Output:
+    NULL: Directory does not exist or an error occurred
+    File: File object for the directory
+@TODO: Check file exists first and check if
 */
 File QSPIFlashMemory::getFile(char directory[], char filename[]) {
     path.resolve(resolvedPath, directory, filename);
-    File f = fs.open(resolvedPath);
-    return f;
+    return fs.open(resolvedPath);
 }
 
 /*
 Method: createDirectory()
 Description: Create an empty file in the specified directory with the specified name
-Input: directory char array, filename char array (with extension)
-Output: 0 = success, -1 = already exists, -2 = error creating, -9 = flash not ready
+Input:
+    char directory[]: user-specified directory (leading /)
+Output:
+     0: success
+    -1: already exists
+    -2: error creating
+    -3: Filesystem could not be mounted/accessed
+    -9: flash not ready
 */
 int QSPIFlashMemory::createDirectory(char directory[]) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkIfFlashMemoryIsReady() == false) {
         if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createDirectory() - Flash not ready"); }
         return -9;
@@ -283,10 +321,25 @@ int QSPIFlashMemory::createDirectory(char directory[]) {
 /*
 Method: createFile()
 Description: Create an empty file in the specified directory with the specified name
-Input: directory char array, filename char array (with extension)
-Output: 0 = success, -1 = already exists, -2 = Create Directory error already exists, -3 Create directory failed, -5 = error creating, -9 = flash not ready
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+Output:
+     0: success
+    -1: file already exists
+    -2: Create Directory error already exists
+    -3: Filesystem could not be mounted/accessed
+    -4: Create directory failed
+    -5: error creating
+    -9: flash not ready
+
 */
 int QSPIFlashMemory::createFile(char directory[], char filename[]) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkIfFlashMemoryIsReady() == false) {
         if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createFile() - Flash not ready"); }
         return -9;
@@ -306,7 +359,7 @@ int QSPIFlashMemory::createFile(char directory[], char filename[]) {
             }
             case -2: {
                 if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createFile() - Directory nonexistent but error occurred during creation"); }
-                return -3;
+                return -4;
             }
             case 0: {
                 if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createFile() - Directory Created "); }
@@ -317,7 +370,6 @@ int QSPIFlashMemory::createFile(char directory[], char filename[]) {
     path.resolve(resolvedPath, directory, filename);
     if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::createFile() - creating file "); Serial.print(resolvedPath); }
 
-    // fs.activate();
     File cf = fs.open(resolvedPath, FILE_WRITE);
     if (!cf) {
         if (_debugLevel > 0) { Serial.println("\nError, failed to open file for writing"); }
@@ -333,10 +385,23 @@ int QSPIFlashMemory::createFile(char directory[], char filename[]) {
 /*
 Method: saveFile()
 Description: Save content to file
-Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
-Output:  0 = success, -1 = file didnt exist and failed to create it,, -2 file already has content and user requested not to over write
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+    bool overwriteExistingContent: true = overwrite, false = append to file
+Output:
+     0: success
+    -1: file didnt exist and failed to create it
+    -2: file already has content and user requested not to over write
+    -3: Filesystem could not be mounted/accessed
 */
 int QSPIFlashMemory::saveFile(char directory[], char filename[], char content[], bool overwriteExistingContent) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkFileExists(directory, filename) == false) {
         if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - File doesnt exist"); }
 
@@ -354,25 +419,19 @@ int QSPIFlashMemory::saveFile(char directory[], char filename[], char content[],
     }
 
     path.resolve(resolvedPath, directory, filename);
-    fs.activate();
-    File wf = fs.open(resolvedPath, FILE_WRITE);
-    if (!wf) {
-        if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - Error, failed to open file for writing!"); }
-    }
 
+    File wf;
     if (overwriteExistingContent == true) {
-        // wf.seek(0);
-        // for (int i = 0; i < wf.size() ; i++) {
-        //     wf.print(NULL);
-        // }
-        // wf.seek(0);
-        // wf.print(content);
-        wf.write(content);
+        fs.remove(resolvedPath);
     } else {
-        wf.print(content);
+        wf.seek(wf.available());
     }
+    wf = fs.open(resolvedPath, FILE_WRITE);
+    if (!wf) {
+        if (_debugLevel > 0) { Serial.println("\nQSPIFlashMemory::saveFile() - Error, failed to open file for appending content!"); }
+    }
+    wf.print(content);
 
-    // Close the file when finished writing.
     wf.close();
     return 0;
 }
@@ -380,10 +439,22 @@ int QSPIFlashMemory::saveFile(char directory[], char filename[], char content[],
 /*
 Method: appendFile()
 Description: Save content to file
-Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
-Output:  0 = success, -1 = file didnt exist and failed to create it, -2 file couldnt be written to
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+Output:
+     0: success
+    -1: file didnt exist and failed to create it
+    -2: file already has content and user requested not to over write
+    -3: Filesystem could not be mounted/accessed
 */
 int QSPIFlashMemory::appendToFile(char directory[], char filename[], char content[]) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkFileExists(directory, filename) == false) {
         if (createFile(directory, filename) == false) {
            return -1;
@@ -391,14 +462,13 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], char conten
     }
 
     path.resolve(resolvedPath, directory, filename);
-    fs.activate();
+    // fs.activate();
     File wf = fs.open(resolvedPath, FILE_WRITE);
     if (!wf) {
         if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
         return -2;
     }
 
-    // Close the file when finished writing.
     wf.seek(wf.available());
     wf.print(content);
     wf.close();
@@ -408,10 +478,21 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], char conten
 /*
 Method: getFilesize()
 Description: Get filesize of the file path provided
-Input: directory char array, filename char array (with extension)
-Output: 0 = success, -1 = Doesnt exist, -2 = error reading
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+Output:
+     0: success
+    -1: Doesnt exist
+    -2: error reading
+    -3: Filesystem could not be mounted/accessed
 */
 int QSPIFlashMemory::getFilesize(char directory[], char filename[]) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkFileExists(directory, filename) == false) {
         return -1;
     }
@@ -426,11 +507,24 @@ int QSPIFlashMemory::getFilesize(char directory[], char filename[]) {
 
 /*
 Method: readFileContents()
-Description: Read file content to provided fileContent array
-Input: directory char array, filename char array (with extension), content char array, boolean flag to override existing content
-Output: true = content read and stored in fileContent[] array, false = content not written
+Description: Read file content to provided content array
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+    long maxReadSize: Read specific number of bytes
+Output: true = content read and stored in content[] array, false = content not written
+     0: success
+    -1: File doesnt exist
+    -2: error opening file to read
+    -3: Filesystem could not be mounted/accessed
 */
-int QSPIFlashMemory::readFileContents(char directory[], char filename[], uint8_t fileContent[], int maxReadSize) {
+int QSPIFlashMemory::readFileContents(char directory[], char filename[], uint8_t content[], long maxReadSize) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
     if (checkFileExists(directory, filename) == false) {
         return -1;
     }
@@ -442,7 +536,7 @@ int QSPIFlashMemory::readFileContents(char directory[], char filename[], uint8_t
     }
     int i = 0;
     while (cf.available() && i < maxReadSize) {
-        fileContent[i] = cf.read();
+        content[i] = cf.read();
         i++;
     }
     return 0;
@@ -451,19 +545,30 @@ int QSPIFlashMemory::readFileContents(char directory[], char filename[], uint8_t
 /*
 Method: deleteFile()
 Description: Delete a file by its filename in the specified directory
-Input: directory char array, filename char array (with extension)
-Output: 0 = success, -1 = could not delete
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+Output:
+     0: success
+    -1: File could not be deleted
+    -1: File was not deleted
+    -3: Filesystem could not be mounted/accessed
 */
 int QSPIFlashMemory::deleteFile(char directory[], char filename[]) {
-  // Delete a file with the remove command.  For example create a test2.txt file
-    // inside /test/foo and then delete it.
-    path.resolve(resolvedPath, directory, filename);
     fs.activate();
-    File cf = fs.open(resolvedPath, FILE_WRITE);
-    cf.close();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
+
+    path.resolve(resolvedPath, directory, filename);
     if (!fs.remove(resolvedPath)) {
-      if (_debugLevel > 0) { Serial.println("\nError, couldn't delete test.txt file!"); }
-      return -1;
+        if (_debugLevel > 0) { Serial.println("\nError, couldn't delete test.txt file!"); }
+        return -1;
+    }
+    if (fs.exists(resolvedPath)) {
+        if (_debugLevel > 0) { Serial.println("\nError, file was not deleted!"); }
+        return -2;
     }
     if (_debugLevel > 0) { Serial.println("\nDeleted file!"); }
     return 0;
@@ -472,20 +577,25 @@ int QSPIFlashMemory::deleteFile(char directory[], char filename[]) {
 /*
 Method: deleteDirectory()
 Description: Delete directory and all sub-content
-Input: directory char array
-Output: 0 = success, -1 = could not delete, -2 = directory wasnt deleted
+Input:
+    char directory[]: user-specified directory (leading /)
+Output:
+     0: success
+    -1: Directory could not be deleted
+    -2: Directory was not deleted
+    -3: Filesystem could not be mounted/accessed
 */
 int QSPIFlashMemory::deleteDirectory(char directory[]) {
-    // Delete a directory with the rmdir command.  Be careful as
-    // this will delete EVERYTHING in the directory at all levels!
-    // I.e. this is like running a recursive delete, rm -rf, in
-    // unix filesystems!
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
 
     if (!fs.rmdir(directory)) {
         if (_debugLevel > 0) { Serial.println("\nError, couldn't delete directory!"); }
         return -1;
     }
-    // Check that test is really deleted.
     if (fs.exists(directory)) {
         if (_debugLevel > 0) { Serial.println("\nError, directory was not deleted!"); }
         return -2;
@@ -497,7 +607,7 @@ int QSPIFlashMemory::deleteDirectory(char directory[]) {
 /*
 Method: getFlashQSPIInterface()
 Description: get the raw QSPI_GD25Q flash object
-Input:
+Input: None
 Output: Adafruit_QSPI_GD25Q object
 */
 Adafruit_QSPI_GD25Q QSPIFlashMemory::getFlashQSPIInterface() {
@@ -507,7 +617,7 @@ Adafruit_QSPI_GD25Q QSPIFlashMemory::getFlashQSPIInterface() {
 /*
 Method: getFlashFileSystemInterface()
 Description: get the raw FatFs object for low-level controls
-Input:
+Input: None
 Output: Adafruit_W25Q16BV_FatFs object
 */
 Adafruit_W25Q16BV_FatFs QSPIFlashMemory::getFlashFileSystemInterface() {

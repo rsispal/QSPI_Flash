@@ -1,3 +1,6 @@
+#ifndef   _QSPIFLASHMEMORY_H
+#define   _QSPIFLASHMEMORY_H
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <Adafruit_SPIFlash.h>
@@ -5,28 +8,22 @@
 #include <Adafruit_QSPI_GD25Q.h>
 #include <Adafruit_SPIFlash.h>
 #include <Adafruit_QSPI.h>
-
-#include <string.h>
-
-
-
-#ifndef   _QSPIFLASHMEMORY_H
-#define   _QSPIFLASHMEMORY_H
+#include "Path.h"
 
 /*
-Debug Levels (CREATE ENUMS)
-0 = None
-1 = Minimal
-2 = Show warnings
-3 = Show intermediate values
-9 = Show extended debug output
+Debug Levels (CREATE CONSTANTS)
+    0 = None
+    1 = Minimal
+    2 = Show warnings
+    3 = Show intermediate values
+    9 = Show extended debug output
 */
-
-
 
 class QSPIFlashMemory {
 
     public:
+        Path path;
+
         uint8_t manufacturerID;
         uint8_t deviceID;
         uint16_t pageCount;
@@ -57,14 +54,12 @@ class QSPIFlashMemory {
         int saveFile(char directory[], char filename[], char content[], bool overwriteExistingContent);
         int appendToFile(char directory[], char filename[], char content[]);
         int getFilesize(char directory[], char filename[]);
-        int readFileContents(char directory[], char filename[], uint8_t fileContent[], int maxReadSize);
+        int readFileContents(char directory[], char filename[], uint8_t fileContent[], long maxReadSize);
         int deleteFile(char directory[], char filename[]);
         int deleteDirectory(char directory[]);
-
     private:
-
         int _debugLevel = 0;
-        char resolvedPath[512] = { 0 };
+        char resolvedPath[260];
 };
 
 #endif // _QSPIFLASHMEMORY_H
