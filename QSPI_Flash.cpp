@@ -501,7 +501,9 @@ int QSPIFlashMemory::getFilesize(char directory[], char filename[]) {
         if (_debugLevel > 0) { Serial.println("\nError, failed to open file for reading"); }
         return -2;
     }
-    return cf.size();
+    int size = cf.size();
+    cf.close();
+    return size;
 }
 
 /*
