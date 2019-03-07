@@ -6,7 +6,6 @@
 
 > To simplify usage, i've written a number of helper methods which allows faster usage and also provided methods for advanced users to access the QSPI connection and Filesystem.
 
-
 ## Compatibility
 This library has been tailored for the Adafruit ItsyBitsy M4 (only boards I have on hand) and exposes:
 - Adafruit_QSPI_GD25Q
@@ -23,6 +22,20 @@ Adafruit Metro M4 | `TBD` | `Untested`
 Adafruit Grand Central M4 | `TBD` | `Untested`
 
 Please run the example sketch and open an issue containing the output if you own any of the untested boards so I can update this compatibility information for others.
+
+
+### IMPORTANT NOTICE
+You must use version `1.0.8` of the `Adafruit_SPIFlash` library (https://github.com/adafruit/Adafruit_SPIFlash.git). Recent changes in `1.1.0` have caused this library to fail.
+
+
+## Todo
+| Task  |  Status |
+|---|---|
+Add ability to completely remove debug output to reduce program size | `Scheduled` |
+Fix compatibility with `Adafruit_SPIFlash@1.0.8` | `Scheduled` |
+Add better documentation | `Scheduled` |
+
+
 
 ## Contribute
 Want to make this better? Open a pull request and issue explaining what you're contributing!
