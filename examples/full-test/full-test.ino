@@ -8,7 +8,7 @@ void setup() {
     Serial.begin(115200);
     while(!Serial);
 
-    flashMemory.initialise(0);
+    flashMemory.initialise(0);  // Set to a nonzero value to view additional action
 
     while (flashMemory.checkIfFlashMemoryIsReady() != true) {
         Serial.print("Flash chip unavailable. Retrying...");
@@ -16,7 +16,6 @@ void setup() {
     }
     Serial.print("Flash Chip Found");
 
-    // Serial.print("Signal Select Pin: "); Serial.print(flash.);
     Serial.print("\nManufacturer: 0x");Serial.print(flashMemory.manufacturerID, HEX);
     Serial.print("\nDevice ID: 0x");Serial.print(flashMemory.deviceID, HEX);
     Serial.print("\nChip ID: 0x");Serial.print(flashMemory.chipModelID, HEX);
@@ -24,44 +23,47 @@ void setup() {
     Serial.print("\nFlash Pages: ");Serial.print(flashMemory.pageCount);
     Serial.print("\nFlash Page Size: ");Serial.print(flashMemory.pageSize);
     Serial.print("\nDrive Size: ");Serial.print(flashMemory.pageCount * flashMemory.pageSize);Serial.print(" bytes");
-    Serial.print("");
+    Serial.print("\n\n");
 
     // *************************************************************************
     // * Format Flash
     // *************************************************************************
-    flashMemory.format();
+    Serial.print("\n\nFormatting Filesystem\n");
+
+    int res = flashMemory.format();
+    if (res < 0) {
+        return;
+    }
 
     // *************************************************************************
     // * Read Empty Flash
     // *************************************************************************
-    Serial.print("\n\n*** TEST 1: Create directory, create files and list directory ***\n");
-
+    Serial.print("\n\nTEST 1: Create directory, create files and list directory\n");
     flashMemory.createDirectory("/test-directory-1");
 
-    Serial.print("\n-> Create file1.txt");
+    Serial.print("\n -> Create file1.txt");
     flashMemory.createFile("/test-directory-1", "file1.txt");
 
-    Serial.print("\n-> Create file2.txt");
+    Serial.print("\n -> Create file2.txt");
     flashMemory.createFile("/test-directory-1", "file2.txt");
 
-    Serial.print("\n-> Create file3.txt");
+    Serial.print("\n -> Create file3.txt");
     flashMemory.createFile("/test-directory-1", "file3.txt");
 
-    Serial.print("\n-> Create file4.txt");
+    Serial.print("\n -> Create file4.txt");
     flashMemory.createFile("/test-directory-1", "file4.txt");
 
-    Serial.print("\n-> Create file5.txt");
+    Serial.print("\n -> Create file5.txt");
     flashMemory.createFile("/test-directory-1", "file5.txt");
 
-    Serial.print("\n-> Create file6.txt");
+    Serial.print("\n -> Create file6.txt");
     flashMemory.createFile("/test-directory-1", "file6.txt");
 
-    Serial.print("\n-> Create file6.txt again (should conflict)");
+    Serial.print("\n -> Create file6.txt again (should conflict)");
     flashMemory.createFile("/test-directory-1", "file6.txt");
 
 
     File rootDir = flashMemory.getFilesInDirectory("/test-directory-1");
-    rootDir.isDirectory();
 
     if (!rootDir) {
         Serial.print(" -> Error, failed to open directory! May not exist");
@@ -71,7 +73,7 @@ void setup() {
         Serial.print(" -> Error, requested path is not a directory!");
         return;
     }
-    Serial.print(" -> Directory Contents:");
+    Serial.print("\n -> Directory Contents:\n");
     File child = rootDir.openNextFile();
     if (child) {
         while (child) {
@@ -92,13 +94,13 @@ void setup() {
     File testFile2;
     flashMemory.createDirectory("/test-directory-2");
 
-    Serial.print("\n-> Create file1.txt inside /test-directory-2");
+    Serial.print("\n -> Create file1.txt inside /test-directory-2");
     flashMemory.createFile("/test-directory-2", "file1.txt");
 
     char test2Line1[] = "This is one line of text";
     flashMemory.saveFile("/test-directory-2", "file1.txt", test2Line1, true);
     testFile2 = flashMemory.getFile("/test-directory-2", "file1.txt");
-    Serial.print("\n-> Reading back file contents (should have 1 line): \n");
+    Serial.print("\n -> Reading back file contents (should have 1 line): \n");
     while (testFile2.available()) {
         char c = testFile2.read();
         Serial.print(c);
@@ -107,7 +109,7 @@ void setup() {
     flashMemory.saveFile("/test-directory-2", "file1.txt", test2Line2, true);
 
     testFile2 = flashMemory.getFile("/test-directory-2", "file1.txt");
-    Serial.print("\n-> Reading back file contents (should have two lines): \n");
+    Serial.print("\n -> Reading back file contents (should have two lines): \n");
     while (testFile2.available()) {
         char c = testFile2.read();
         Serial.print(c);
@@ -120,13 +122,13 @@ void setup() {
     File testFile3;
     flashMemory.createDirectory("/test-directory-3");
 
-    Serial.print("\n-> Create file1.txt inside /test-directory-3");
+    Serial.print("\n -> Create file1.txt inside /test-directory-3");
     flashMemory.createFile("/test-directory-3", "file1.txt");
 
     char test3Line1[] = "This is one line of text";
     flashMemory.appendToFile("/test-directory-3", "file1.txt", test3Line1);
     testFile3 = flashMemory.getFile("/test-directory-3", "file1.txt");
-    Serial.print("\n-> Reading back file contents (should have 1 line): \n");
+    Serial.print("\n -> Reading back file contents (should have 1 line): \n");
     while (testFile3.available()) {
         char c = testFile3.read();
         Serial.print(c);
@@ -135,7 +137,7 @@ void setup() {
     flashMemory.appendToFile("/test-directory-3", "file1.txt", test3Line2);
 
     testFile3 = flashMemory.getFile("/test-directory-3", "file1.txt");
-    Serial.print("\n-> Reading back file contents (should have two lines): \n");
+    Serial.print("\n -> Reading back file contents (should have two lines): \n");
     while (testFile3.available()) {
         char c = testFile3.read();
         Serial.print(c);
@@ -153,7 +155,7 @@ void setup() {
     char test4Line1[] = "Title\nLine 1\nLine 2\nLine 3\nLine 4\nLine 5";
     flashMemory.saveFile("/test-directory-4", "file1.txt", test4Line1, true);
     testFile4 = flashMemory.getFile("/test-directory-4", "file1.txt");
-    Serial.print("\n-> Reading back file contents (should have 5 lines):\n");
+    Serial.print("\n -> Reading back file contents (should have 5 lines):\n");
     while (testFile4.available()) {
         char c = testFile4.read();
         Serial.print(c);
@@ -178,7 +180,7 @@ void setup() {
     uint8_t test5Content[40];
     int test5Res = flashMemory.readFileContents("/test-directory-5", "file1.txt", test5Content, sizeof(test5Content));
 
-    Serial.print("\n-> Returned file content: \n");
+    Serial.print("\n -> Returned file content: \n");
     for (int i = 0 ; i < sizeof(test5Content) ; i++) {
         Serial.print(char(test5Content[i]));
     }
@@ -197,13 +199,13 @@ void setup() {
 
     bool t6Exists;
     t6Exists = flashMemory.checkFileExists("/test-directory-6", "file1.txt");
-    Serial.print("\n-> Does [/test-directory-6/file1.txt] exist? "); Serial.print(t6Exists ? "YES" : "NO");
+    Serial.print("\n -> Does [/test-directory-6/file1.txt] exist? "); Serial.print(t6Exists ? "YES" : "NO");
 
-    Serial.print("\n-> Performing deletion");
+    Serial.print("\n -> Performing deletion");
     flashMemory.deleteFile("/test-directory-6", "file1.txt");
 
     t6Exists = flashMemory.checkFileExists("/test-directory-6", "file1.txt");
-    Serial.print("\n-> Does [/test-directory-6/file1.txt] exist? "); Serial.print(t6Exists ? "YES" : "NO");
+    Serial.print("\n -> Does [/test-directory-6/file1.txt] exist? "); Serial.print(t6Exists ? "YES" : "NO");
 
 
     // *************************************************************************
@@ -249,13 +251,13 @@ void setup() {
 
     bool t7Exists;
     t7Exists = flashMemory.checkDirectoryExists("/test-directory-7");
-    Serial.print("\n-> Does [/test-directory-7] exist? "); Serial.print(t7Exists ? "YES" : "NO");
+    Serial.print("\n -> Does [/test-directory-7] exist? "); Serial.print(t7Exists ? "YES" : "NO");
 
-    Serial.print("\n-> Performing deletion");
+    Serial.print("\n -> Performing deletion");
     flashMemory.deleteDirectory("/test-directory-7");
 
     t7Exists = flashMemory.checkDirectoryExists("/test-directory-7");
-    Serial.print("\n-> Does [/test-directory-7] exist? "); Serial.print(t7Exists ? "YES" : "NO");
+    Serial.print("\n -> Does [/test-directory-7] exist? "); Serial.print(t7Exists ? "YES" : "NO");
 
 
     // *************************************************************************
@@ -263,6 +265,10 @@ void setup() {
     // *************************************************************************
     Adafruit_W25Q16BV_FatFs fatfs = flashMemory.getFlashFileSystemInterface();
     // File rootDir = fatfs.open("/test");
+
+
+    Serial.print("\n\n... All Tests Complete ...\n");
+
 }
 
 void loop(){

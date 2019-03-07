@@ -225,8 +225,7 @@ File QSPIFlashMemory::getFilesInDirectory(char directory[]) {
     if (checkDirectoryExists(directory) == false) {
         return NULL;
     }
-    File dir = fs.open(directory);
-    return dir;
+    return fs.open(directory);
 }
 
 /*
