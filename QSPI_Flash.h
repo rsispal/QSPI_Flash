@@ -37,11 +37,11 @@ class QSPIFlashMemory {
         uint16_t getFlashPageSize();
         uint32_t getFlashChipID();
         uint32_t getFlashChipAddress();
-        int initialise();
-        int initialise(int debugLevel);
+        int8_t initialise();
+        int8_t initialise(int8_t debugLevel);
         bool checkIfFlashMemoryIsReady();
-        int setDebugLevel(int debugLevel);
-        int getDebugLevel(int debugLevel);
+        int8_t setDebugLevel(int8_t debugLevel);
+        int8_t getDebugLevel();
         Adafruit_QSPI_GD25Q getFlashQSPIInterface();
         Adafruit_W25Q16BV_FatFs getFlashFileSystemInterface();
         int format();

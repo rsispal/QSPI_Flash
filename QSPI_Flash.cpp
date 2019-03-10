@@ -12,7 +12,7 @@ Input: None
 Output:
     0: success
 */
-int QSPIFlashMemory::initialise() {
+int8_t QSPIFlashMemory::initialise() {
     flash.setFlashType(FLASH_TYPE);
     _debugLevel = 0;
     path.initialise(_debugLevel);
@@ -36,7 +36,7 @@ Output:
      0: success
     -1: chip not ready
 */
-int QSPIFlashMemory::initialise(int debugLevel) {
+int8_t QSPIFlashMemory::initialise(int8_t debugLevel) {
     flash.setFlashType(FLASH_TYPE);
     if (debugLevel >= 0 && debugLevel < 255) {
         _debugLevel = debugLevel;
@@ -56,12 +56,12 @@ int QSPIFlashMemory::initialise(int debugLevel) {
 Method: setDebugLevel()
 Description: Override existing debug level
 Input:
-    int debugLevel: Desired debug level integer (0 - 254) - See QSPI_Flash.h for details
+    int8_t debugLevel: Desired debug level integer (0 - 254) - See QSPI_Flash.h for details
 Output:
      0: Value changed successfully
     -1: Illegal value
 */
-int QSPIFlashMemory::setDebugLevel(int debugLevel) {
+int8_t QSPIFlashMemory::setDebugLevel(int8_t debugLevel) {
     if (debugLevel >= 0 && debugLevel < 255) {
         _debugLevel = debugLevel;
         path.initialise(_debugLevel);
@@ -75,9 +75,9 @@ Method: getDebugLevel()
 Description: Get the current debug level value
 Input: None
 Output:
-    int (0 - 254): Current debug level integer (0 - 254) - See QSPI_Flash.h for details
+    int8_t (0 - 254): Current debug level integer (0 - 254) - See QSPI_Flash.h for details
 */
-int QSPIFlashMemory::getDebugLevel(int debugLevel) {
+int8_t QSPIFlashMemory::getDebugLevel() {
     return _debugLevel;
 }
 
