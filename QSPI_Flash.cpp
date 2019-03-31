@@ -467,7 +467,7 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], char conten
         if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
         return -2;
     }
-    Serial.print("-> Bytes Available: ");Serial.print(wf.available());
+
     wf.seek(wf.size());
     wf.print(content);
     wf.close();
@@ -507,7 +507,6 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], int content
         return -2;
     }
 
-    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
     int ptr = wf.size();
     for (int i = 0 ; i < contentLength; i++) {
         wf.seek(ptr);
@@ -555,7 +554,6 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], int content
         return -2;
     }
 
-    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
     wf.seek(wf.size());
     if (writeLiterally) {
         wf.print(String(content));
@@ -599,7 +597,6 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], char conten
         return -2;
     }
 
-    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
     wf.seek(wf.size());
     wf.print(String(content));
     wf.close();
