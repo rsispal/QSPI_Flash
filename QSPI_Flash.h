@@ -52,7 +52,20 @@ class QSPIFlashMemory {
         int createDirectory(char directory[]);
         int createFile(char directory[], char filename[]);
         int saveFile(char directory[], char filename[], char content[], bool overwriteExistingContent);
+
+
+
+
         int appendToFile(char directory[], char filename[], char content[]);
+        int appendToFile(char directory[], char filename[], int content[], int contentLength, bool writeLiterally);
+        int appendToFile(char directory[], char filename[], int content, bool writeLiterally);
+        int appendToFile(char directory[], char filename[], char content);
+
+
+
+
+
+
         int getFilesize(char directory[], char filename[]);
         int readFileContents(char directory[], char filename[], uint8_t fileContent[], long maxReadSize);
         int deleteFile(char directory[], char filename[]);

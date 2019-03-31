@@ -15,7 +15,7 @@ Output:
 int8_t QSPIFlashMemory::initialise() {
     flash.setFlashType(FLASH_TYPE);
     _debugLevel = 0;
-    path.initialise(_debugLevel);
+    path.initialise(0);
     if (checkIfFlashMemoryIsReady() == false) {
         return -1;
     }
@@ -40,7 +40,7 @@ int8_t QSPIFlashMemory::initialise(int8_t debugLevel) {
     flash.setFlashType(FLASH_TYPE);
     if (debugLevel >= 0 && debugLevel < 255) {
         _debugLevel = debugLevel;
-        path.initialise(debugLevel);
+        path.initialise(_debugLevel);
     }
     if (checkIfFlashMemoryIsReady() == false) {
         return -1;
@@ -423,7 +423,7 @@ int QSPIFlashMemory::saveFile(char directory[], char filename[], char content[],
     if (overwriteExistingContent == true) {
         fs.remove(resolvedPath);
     } else {
-        wf.seek(wf.available());
+        wf.seek(wf.available() + 1);
     }
     wf = fs.open(resolvedPath, FILE_WRITE);
     if (!wf) {
@@ -467,9 +467,141 @@ int QSPIFlashMemory::appendToFile(char directory[], char filename[], char conten
         if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
         return -2;
     }
-
-    wf.seek(wf.available());
+    Serial.print("-> Bytes Available: ");Serial.print(wf.available());
+    wf.seek(wf.size());
     wf.print(content);
+    wf.close();
+    return 0;
+}
+
+/*
+Method: appendFile()
+Description: Save content to file
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+Output:
+     0: success
+    -1: file didnt exist and failed to create it
+    -2: file already has content and user requested not to over write
+    -3: Filesystem could not be mounted/accessed
+*/
+int QSPIFlashMemory::appendToFile(char directory[], char filename[], int content[], int contentLength, bool writeLiterally) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
+    if (checkFileExists(directory, filename) == false) {
+        if (createFile(directory, filename) == false) {
+           return -1;
+        }
+    }
+
+    path.resolve(resolvedPath, directory, filename);
+    // fs.activate();
+    File wf = fs.open(resolvedPath, FILE_WRITE);
+    if (!wf) {
+        if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
+        return -2;
+    }
+
+    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
+    int ptr = wf.size();
+    for (int i = 0 ; i < contentLength; i++) {
+        wf.seek(ptr);
+        if (writeLiterally) {
+            wf.print(String(content[i]));
+        } else {
+            wf.print(content[i]);
+        }
+        ptr++;
+    }
+    wf.close();
+    return 0;
+}
+
+/*
+Method: appendFile()
+Description: Save content to file
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+Output:
+     0: success
+    -1: file didnt exist and failed to create it
+    -2: file already has content and user requested not to over write
+    -3: Filesystem could not be mounted/accessed
+*/
+int QSPIFlashMemory::appendToFile(char directory[], char filename[], int content, bool writeLiterally) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
+    if (checkFileExists(directory, filename) == false) {
+        if (createFile(directory, filename) == false) {
+           return -1;
+        }
+    }
+
+    path.resolve(resolvedPath, directory, filename);
+    // fs.activate();
+    File wf = fs.open(resolvedPath, FILE_WRITE);
+    if (!wf) {
+        if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
+        return -2;
+    }
+
+    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
+    wf.seek(wf.size());
+    if (writeLiterally) {
+        wf.print(String(content));
+    } else {
+        wf.print(content);
+    }
+    wf.close();
+    return 0;
+}
+
+/*
+Method: appendFile()
+Description: Save content to file
+Input:
+    char directory[]: user-specified directory (leading /)
+    char filename[]: User-specified filename (with extension)
+    char content[]: User-specified file content (NULL-terminated)
+Output:
+     0: success
+    -1: file didnt exist and failed to create it
+    -2: file already has content and user requested not to over write
+    -3: Filesystem could not be mounted/accessed
+*/
+int QSPIFlashMemory::appendToFile(char directory[], char filename[], char content) {
+    fs.activate();
+    if (!fs.begin()) {
+        if (_debugLevel > 0) { Serial.print("\n -> Error, failed to mount filesystem!"); }
+        return -3;
+    }
+    if (checkFileExists(directory, filename) == false) {
+        if (createFile(directory, filename) == false) {
+           return -1;
+        }
+    }
+
+    path.resolve(resolvedPath, directory, filename);
+    // fs.activate();
+    File wf = fs.open(resolvedPath, FILE_WRITE);
+    if (!wf) {
+        if (_debugLevel > 0) { Serial.println("\nError, failed to open test.txt for writing!"); }
+        return -2;
+    }
+
+    Serial.print("-> Bytes Available: ");Serial.print(wf.size());
+    wf.seek(wf.size());
+    wf.print(String(content));
     wf.close();
     return 0;
 }
